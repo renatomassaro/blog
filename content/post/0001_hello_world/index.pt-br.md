@@ -2,6 +2,7 @@
 title: "Ola, Mundo!"
 date: 2024-09-13T19:04:35-03:00
 draft: true
+tags: [postgres, SQLite]
 ---
 
 ## Introduction
