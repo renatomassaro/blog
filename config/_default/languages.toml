@@ -4,7 +4,7 @@ languagedirection = "ltr"
 weight = 1
 
 [en.params.sidebar]
-emoji = "🍥"
+# emoji = "🍥"
 subtitle = "Things I learned during life's runtime."
 
 [pt-br]
@@ -13,5 +13,5 @@ languagedirection = "ltr"
 weight = 2
 
 [pt-br.params.sidebar]
-emoji = "🍥"
+# emoji = "🍥"
 subtitle = "Coisas que aprendi no meu runtime."
