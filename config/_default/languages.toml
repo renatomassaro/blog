@@ -1,0 +1,17 @@
+[en]
+languageName = "English"
+languagedirection = "ltr"
+weight = 1
+
+[en.params.sidebar]
+# emoji = "🍥"
+subtitle = "Things I learned during life's runtime."
+
+[pt-br]
+languageName = "Português"
+languagedirection = "ltr"
+weight = 2
+
+[pt-br.params.sidebar]
+# emoji = "🍥"
+subtitle = "Coisas que aprendi no meu runtime."

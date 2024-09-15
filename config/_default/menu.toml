@@ -1,0 +1,36 @@
+# Configure main menu and social menu
+[[main]]
+weight = -100
+identifier = "home"
+name = "Home"
+url = "/"
+
+[main.params]
+icon = "home"
+newtab = false
+
+# [[main]]
+# weight = -95
+# identifier = "about_me"
+# name = "About Me"
+# url = "/about_me"
+
+# [main.params]
+# icon = "user"
+# newtab = false
+
+[[social]]
+identifier = "github"
+name = "GitHub"
+url = "https://github.com/RenatoMassaro"
+
+[social.params]
+icon = "brand-github"
+
+# [[social]]
+# identifier = "twitter"
+# name = "Twitter"
+# url = "https://twitter.com/RenatoMassaro"
+
+# [social.params]
+# icon = "brand-twitter"

@@ -1,0 +1,26 @@
+# Hugo build output
+/public/
+/resources/
+/hugo_stats.json
+.hugo_build.lock
+
+# Hugo cache
+/cache/
+
+# Temporary files and backups
+*.tmp
+*.bak
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Node.js dependencies (if you're using Node for development purposes)
+node_modules/
+
+# .env file (if you have sensitive environment variables)
+.env
+
+# Files created by Hugo server for live reload
+hugo_stats.json
+
