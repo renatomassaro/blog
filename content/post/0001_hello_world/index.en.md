@@ -1,14 +1,21 @@
 ---
-title: "Order matters: Finding out the optimal table layout for your table"
-date: 2024-09-13T19:04:35-03:00
-draft: true
+title: "Optimizing Postgres table layout for maximum efficiency"
+date: 2024-09-15T19:04:35-03:00
+draft: false
 categories: [databases]
-tags: [postgres, SQLite]
+tags: [Postgres, SQLite, MySQL]
+image: cover.webp
 ---
 
 ## Introduction
 
-The smallest possible size for a row is 24 bytes.
+When modeling a Postgres database, you probably don't give much thought to the order of columns in your tables. After all, it seems like the kind of thing that wouldn't affect storage or performance. But what if I told you that simply reordering your columns could reduce the size of your tables and indexes by 20%? This isn't some obscure database trick — it's a direct result of how Postgres aligns data on disk.
+
+In this post, I'll explore how column alignment works in Postgres, why it matters, and how you can optimize your tables for better efficiency. Through a few real-world examples, you'll see how even small changes in column order can lead to measurable improvements.
+
+## Weighing a row
+
+As a direct result of the [table row layout](https://www.postgresql.org/docs/current/storage-page-layout.html#STORAGE-TUPLE-LAYOUT), the smallest possible size for a row is 24 bytes.
 
 ```sql
 SELECT pg_column_size(ROW());
@@ -33,7 +40,7 @@ SELECT pg_column_size(ROW(1::int, 1::smallint));
              30
 ```
 
-So far so good. That's exactly what one would expect: the more data you have in your row, the more space in disk it will use. Furthermore, we expect that the disk usage will be directly related to the data type.
+So far so good. That's exactly what you'd expect: the more data you have in your row, the more space in disk it will use. Disk usage is directly proportional to the data types.
 
 In other words, if we have one integer column, we expect the row size to be 24 + 4 = 28 bytes. If we have one integer column and one smallint column, we expect the row size to be 24 + 4 + 2 = 30 bytes.
 
@@ -46,7 +53,7 @@ SELECT pg_column_size(ROW(1::smallint, 1::int));
              32
 ```
 
-What on Earth! We _just_ saw that a `(integer, smallint)` row yields 30 bytes of storage, but a `(smallint, integer)` row costs 32 bytes of disk space! It happens with other data types, too:
+How is this possible?! We _just_ saw that a `(integer, smallint)` row yields 30 bytes of storage, but a `(smallint, integer)` row costs 32 bytes of disk space! It happens with other data types, too:
 
 ```sql
 -- (bigint, boolean) = 24 + 8 + 1 = 33 bytes
@@ -70,7 +77,7 @@ What is going on here?
 
 The answer is [**data alignment**](https://en.wikipedia.org/wiki/Data_structure_alignment).
 
-Postgres will happily add padding to the underlying data in order to make sure it is properly aligned at the physical layer. Having the data aligned ensures faster access time.
+Postgres will happily add padding to the underlying data in order to make sure it is properly aligned at the physical layer. Having the data aligned ensures faster access time when retrieving pages from disk.
 
 > This is actually a [space-time tradeoff](https://en.wikipedia.org/wiki/Space%E2%80%93time_tradeoff): we are adding seemingly wasteful space in order to have faster data access.
 
@@ -137,7 +144,7 @@ The fact that these two fields have variable length is not really relevant to al
 
 It's also worth pointing out that the `uuid` type is different. It has a `typlen` of 16 bytes, but it has `c` alignment (meaning it needs no prior alignment). As such, you don't need to worry if you have a `boolean` column right before an `uuid`, for example.
 
-In the Postgres codebase you'll find this value being used in the `MAXALIGN` macro to determine the necessary alignment.
+In the Postgres codebase you'll find this value being used in the `MAXALIGN` macro to determine the necessary alignment for fixed-width types.
 
 ```c
 define TYPEALIGN(ALIGNVAL,LEN)  \
@@ -150,11 +157,11 @@ define TYPEALIGN(ALIGNVAL,LEN)  \
 
 ### Alignment applies to indexes, too!
 
--- TODO: Melhorar
+What’s often overlooked is that data alignment doesn’t just impact the rows in your tables — it applies to indexes as well. This can be surprising because we typically think of indexes as compact, optimized structures that exist purely to speed up queries. However, Postgres ensures that data in indexes follows the same alignment rules as table rows, which means that misaligned columns can inflate the size of your indexes just as they do with tables.
 
-This is actually how I found out about the issue.
+This is actually how I originally found out about the importance of data alignment in Postgres. I had an `(int8, int8)` index, which I restructured to be `(int4, int8)` to result in a smaller table/index size. Imagine my surprise when I benchmarked and realized the index size did not change at all!
 
-I had an `(int8, int8)` index, which I restructured to be `(int4, int8)` to result in a smaller table/index size. Imagine my surprise when I benchmarked and realized the index size did not change at all!
+This is a critical point to take home: **misaligned columns affect your indexes too**, potentially increasing both disk usage and memory consumption. Keeping indexes aligned can therefore have a significant impact on database performance and resource efficiency.
 
 ### What it looks like in practice
 
@@ -233,7 +240,7 @@ In fact, for early-stage startups, **my recommendation is to always keep an eye 
 
 A generic rule-of-thumb I've been using for the past few years is to, whenever possible, define columns based on a descending order of data types size.
 
-In other words: start with your larger data types first (`int8`, `float8`, `timestamp`) and leave smaller data types to the end. This will naturally align your table.
+In other words: start with larger data types like `int8`, `float8` and `timestamp`, and place smaller types at the end. This will naturally align your table.
 
 ## Does this apply to other databases?
 
@@ -317,8 +324,6 @@ void row_mysql_pad_col(ulint mbminlen, byte *pad, ulint len) {
 }
 ```
 
-Okay, clearly something, somewhere is padding columns in the InnoDB storage engine. However, when I grep the MySQL codebase for users of this function, I get the impression it's used only in some special cases (instead of always checking for alignment and padding if necessary, as the Postgres codebase does).
+Okay, clearly something, somewhere is padding columns in the InnoDB storage engine. However, when I grep the MySQL codebase for users of this function, I get the impression it's used only in some special cases (instead of always checking for alignment and padding if necessary, as the Postgres codebase does). For example, it seems it's used only for padding fixed-length CHAR columns (see usage at [row0ins.cc](https://github.com/mysql/mysql-server/blob/596f0d238489a9cf9f43ce1ff905984f58d227b6/storage/innobase/row/row0ins.cc#L587)).
 
-In any case, I urge the reader to try the snippet at the "[What it looks like in practice](#what-it-looks-like-in-practice)" section in MySQL and analyze your findings. Something tells me that misaligned tables will not be as big of an issue in MySQL as they are with Postgres.
-
-> NOTE: Since this is my very first post in this blog, I don't yet have a comment system set up, but feel free to reach out to me by email and I'll update the post with any interesting findings or comments.
+In any case, I urge the reader to try the snippet at the "[What it looks like in practice](#what-it-looks-like-in-practice)" section in MySQL and analyze the results. Something tells me that misaligned tables will not be as big of an issue in MySQL as they are with Postgres.
