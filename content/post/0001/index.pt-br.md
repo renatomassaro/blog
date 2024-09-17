@@ -1,7 +1,6 @@
 ---
 title: "Otimizando a estrutura de tabelas no Postgres para máxima eficiência"
 date: 2024-09-15T19:04:35-03:00
-draft: true
 categories: [databases]
 tags: [Postgres, SQLite, MySQL]
 image: cover.webp
