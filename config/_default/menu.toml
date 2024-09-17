@@ -23,9 +23,19 @@ newtab = false
 identifier = "github"
 name = "GitHub"
 url = "https://github.com/RenatoMassaro"
+weight = 10
 
 [social.params]
 icon = "brand-github"
+
+[[social]]
+identifier = "contact"
+name = "Email"
+url = "mailto:r@ena.to"
+weight = 20
+
+[social.params]
+icon = "mail"
 
 # [[social]]
 # identifier = "twitter"

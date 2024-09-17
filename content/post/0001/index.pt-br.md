@@ -1,7 +1,6 @@
 ---
 title: "Otimizando a estrutura de tabelas no Postgres para máxima eficiência"
 date: 2024-09-15T19:04:35-03:00
-draft: true
 categories: [databases]
 tags: [Postgres, SQLite, MySQL]
 image: cover.webp
@@ -141,7 +140,7 @@ Você pode ver, por exemplo, que `int8` requer um alinhamento de `d` (double, ou
 
 `varchar` e `text` funcionam de maneira diferente. Embora tenham um alinhamento de `i`, seu `typlen` é negativo. Por quê? Porque eles têm tamanho variável, ou seja, usam uma estrutura `varlena`.
 
-O fato de esses dois campos terem comprimento variável não é realmente relevante para o alinhamento, exceto pelo fato de que tal coluna variável será alinhada em limites de 4 bytes.
+O fato de esses dois campos terem comprimento variável não é realmente relevante para o alinhamento, exceto pelo fato de que tal coluna variável será alinhada em limites de 4 bytes (a menos que o valor esteja TOASTed, como veremos abaixo).
 
 Também vale a pena mencionar que o tipo `uuid` é diferente. Ele tem um `typlen` de 16 bytes, mas possui alinhamento `c` (o que significa que não precisa de alinhamento prévio). Assim, você não precisa se preocupar se tiver uma coluna `boolean` logo antes de um `uuid`, por exemplo.
 
@@ -242,6 +241,18 @@ Na realidade, para startups em estágio inicial, **minha recomendação é sempr
 Uma regra prática genérica que tenho usado nos últimos anos é, sempre que possível, definir colunas com base em uma ordem decrescente de tamanho dos tipos de dados.
 
 Em outras palavras: comece com seus tipos de dados maiores (`int8`, `float8`, `timestamp`) e deixe os tipos de dados menores para o final. Isso naturalmente alinhará sua tabela.
+
+Tenha em mente que essa regra é válida somente quando "todo o resto é igual". Outros fatores, como cardinalidade ou até mesmo legibilidade, podem ter maior prioridade que alinhamento de dados, especialmente em se tratando de índices.
+
+### Uma nota sobre valores TOASTed
+
+Alguns tipos de dados têm comprimento variável e seus valores podem ser armazenados em outro lugar se ficarem muito grande a ponto de uma tupla não caber em uma única página. Quando isso acontece, dizemos que o valor é TOASTed. Nesse cenário, a tupla conterá um ponteiro para os valores correspondentes.
+
+Diferentes tipos de ponteiros podem existir dependendo do tamanho dos dados. Para ponteiros de um byte, nenhum alinhamento é necessário, enquanto um alinhamento de 4 bytes é aplicado a ponteiros de 4 bytes. Da [documentação](https://www.postgresql.org/docs/current/storage-toast.html):
+
+{{<quote>}}
+Valores com cabeçalhos de um byte não estão alinhados em nenhum limite particular, enquanto valores com cabeçalhos de quatro bytes estão alinhados em pelo menos um limite de quatro bytes; essa omissão de preenchimento de alinhamento proporciona economias de espaço adicionais que são significativas em comparação com valores curtos.
+{{</quote>}}
 
 ## Isso se aplica a outros bancos de dados?
 
