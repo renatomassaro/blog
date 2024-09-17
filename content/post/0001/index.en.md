@@ -139,7 +139,7 @@ You can see, for example, that `int8` will require an alignment of `d` (double, 
 
 `varchar` and `text` work differently. Even though they have an alignment of `i`, their `typlen` is negative. Why is that? Because they have variable size, i.e. they use a `varlena` structure.
 
-The fact that these two fields have variable length is not really relevant to alignment, except for the fact that such variable column will be aligned in boundaries of 4 bytes.
+The fact that these two fields have variable length is not really relevant to alignment, except for the fact that such variable column will be aligned in boundaries of 4 bytes (unless the data is TOASTed, as we'll see below).
 
 It's also worth pointing out that the `uuid` type is different. It has a `typlen` of 16 bytes, but it has `c` alignment (meaning it needs no prior alignment). As such, you don't need to worry if you have a `boolean` column right before an `uuid`, for example.
 
@@ -237,9 +237,21 @@ In fact, for early-stage startups, **my recommendation is to always keep an eye 
 
 ### Rule of thumb
 
-A generic rule-of-thumb I've been using for the past few years is to, whenever possible, define columns based on a descending order of data types size.
+A generic rule of thumb I've been using for the past few years is to, whenever possible, define columns based on a descending order of data types size.
 
 In other words: start with larger data types like `int8`, `float8` and `timestamp`, and place smaller types at the end. This will naturally align your table.
+
+Keep in mind this is an "all else being equal" kind of rule. Other factors, like cardinality or even readability, may have higher priority than data alignment, especially when it comes to indexes.
+
+### A note on TOASTed values
+
+Some data types have variable length and their value may be stored elsewhere if it gets too big to the point that a row would not fit in a single page. When this happens, we say the value is TOASTed. In this scenario, the row will contain a pointer to the underlying data.
+
+Different types of pointer may exist depending on the size of the data. For single-byte pointers, no alignment is necessary, whereas a 4-byte alignment is applied to 4-byte pointers. From the [docs](https://www.postgresql.org/docs/current/storage-toast.html):
+
+{{<quote>}}
+Values with single-byte headers aren't aligned on any particular boundary, whereas values with four-byte headers are aligned on at least a four-byte boundary; this omission of alignment padding provides additional space savings that is significant compared to short values.
+{{</quote>}}
 
 ## Does this apply to other databases?
 
