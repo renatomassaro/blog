@@ -341,3 +341,7 @@ void row_mysql_pad_col(ulint mbminlen, byte *pad, ulint len) {
 Ok, claramente algo, em algum lugar, está preenchendo colunas no mecanismo de armazenamento InnoDB. No entanto, ao pesquisar na base de código do MySQL por usuários dessa função, tenho a impressão de que ela é usada apenas em alguns casos especiais (em vez de sempre verificar o alinhamento e preencher quando necessário, como o código do Postgres faz).
 
 De qualquer forma, recomendo ao leitor que teste o snippet na seção ["Como funciona na prática"](#what-it-looks-like-in-practice) no MySQL e analise os resultados. Algo me diz que tabelas desalinhadas não serão tão problemáticas no MySQL quanto são no Postgres.
+
+---
+
+Acompanhe a [discussão no fórum Hacker News](https://news.ycombinator.com/item?id=41757940).

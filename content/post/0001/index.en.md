@@ -338,3 +338,7 @@ void row_mysql_pad_col(ulint mbminlen, byte *pad, ulint len) {
 Okay, clearly something, somewhere is padding columns in the InnoDB storage engine. However, when I grep the MySQL codebase for users of this function, I get the impression it's used only in some special cases (instead of always checking for alignment and padding if necessary, as the Postgres codebase does). For example, it seems it's used only for padding fixed-length CHAR columns (see usage at [row0ins.cc](https://github.com/mysql/mysql-server/blob/596f0d238489a9cf9f43ce1ff905984f58d227b6/storage/innobase/row/row0ins.cc#L587)).
 
 In any case, I urge the reader to try the snippet at the "[What it looks like in practice](#what-it-looks-like-in-practice)" section in MySQL and analyze the results. Something tells me that misaligned tables will not be as big of an issue in MySQL as they are with Postgres.
+
+---
+
+Read the [discussion on Hacker News](https://news.ycombinator.com/item?id=41757940).
