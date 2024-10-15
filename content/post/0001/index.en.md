@@ -76,7 +76,7 @@ What is going on here?
 
 The answer is [**data alignment**](https://en.wikipedia.org/wiki/Data_structure_alignment).
 
-Postgres will happily add padding to the underlying data in order to make sure it is properly aligned at the physical layer. Having the data aligned ensures faster access time when retrieving pages from disk.
+Postgres will happily add padding to the underlying data in order to make sure it is properly aligned at the physical layer. Having the data aligned ensures faster access time when processing it. [[0]](#notes)
 
 > This is actually a [space-time tradeoff](https://en.wikipedia.org/wiki/Space%E2%80%93time_tradeoff): we are adding seemingly wasteful space in order to have faster data access.
 
@@ -342,3 +342,7 @@ In any case, I urge the reader to try the snippet at the "[What it looks like in
 ---
 
 Read the [discussion on Hacker News](https://news.ycombinator.com/item?id=41757940).
+
+## Notes
+
+[0] - This originally read "when retrieving pages from disk". As [branko_d pointed out on Hacker News](https://news.ycombinator.com/item?id=41774123), this may be misleading: the speed-up from proper alignment occurs when _processing_ the data after it's been retrieved, not when retrieving it _from disk_. This is a subtle but important distinction worth emphasizing. [^](#data-alignment)

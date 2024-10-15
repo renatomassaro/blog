@@ -78,7 +78,7 @@ O que está acontecendo aqui?
 
 A resposta é [**alinhamento de dados** (data alignment)](https://en.wikipedia.org/wiki/Data_structure_alignment).
 
-O Postgres vai adicionar "padding" (zeros) nos dados, de forma que eles estejam devidamente alinhados na camada física. Esse alinhamento garante um tempo de acesso mais rápido, ao ler páginas do disco.
+O Postgres vai adicionar "padding" (zeros) nos dados, de forma que eles estejam devidamente alinhados na camada física. Esse alinhamento garante um tempo de acesso mais rápido ao processar esses dados. [[0]](#notas)
 
 > Na realidade, isso se trata de um [space-time tradeoff](https://en.wikipedia.org/wiki/Space%E2%80%93time_tradeoff): nós estamos adicionando dados que são desnecessários, mas que garantirão um acesso mais rápido.
 
@@ -345,3 +345,7 @@ De qualquer forma, recomendo ao leitor que teste o snippet na seção ["Como fun
 ---
 
 Acompanhe a [discussão no fórum Hacker News](https://news.ycombinator.com/item?id=41757940).
+
+## Notas
+
+[0] Originalmente escrevi "ao ler páginas do disco" mas, conforme [branko_d comentou no Hacker News](https://news.ycombinator.com/item?id=41774123), isso pode passar uma impressão errada: o ganho de performance ocorre ao _processar_ dados corretamente alinhados (após eles terem sido lidos em disco), não ao _ler páginas do disco_. Essa é uma diferença sutil mas importante de se enfatizar. [^](#alinhamento-de-dados)
