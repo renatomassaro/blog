@@ -96,7 +96,7 @@ defmodule C1 do
 end
 ```
 
-Here's the output of `mix xref --graph`:
+Here's the output of `mix xref graph`: [[1]](#notes)
 
 ```
 lib/a1.ex
@@ -149,7 +149,7 @@ As you probably know, module attributes are evaluated at compile-time (this is a
 Elixir quiz time: which modules above will have a compilation-time dependency?
 
 <details>
-  <summary>Click to see output of <code>mix xref --graph</code></summary>
+  <summary>Click to see output of <code>mix xref graph</code></summary>
   <code>
   lib/a2.ex<br/>
   └── lib/b2.ex</br>
@@ -540,3 +540,5 @@ This blog post should contain everything you need to identify and permanently fi
 ## Notes
 
 [0] - If you disagree with this assertion, _please_ shoot me an email. I'd love to hear what _you_ consider to be more underestimated than `mix xref`. [^](#a-primer-on-mix-xref)
+
+[1] - This originally read `mix xref --graph`; however, the correct command is `mix xref graph`. Thanks to Sam Weaver (and team) for pointing out this issue! [^](#scenario-1-runtime-dependencies)
