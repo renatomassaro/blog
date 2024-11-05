@@ -537,6 +537,10 @@ This blog post should contain everything you need to identify and permanently fi
 
 ---
 
+[Discuss on Hacker News](https://news.ycombinator.com/item?id=42017312).
+
+---
+
 ## Notes
 
 [0] - If you disagree with this assertion, _please_ shoot me an email. I'd love to hear what _you_ consider to be more underestimated than `mix xref`. [^](#a-primer-on-mix-xref)
