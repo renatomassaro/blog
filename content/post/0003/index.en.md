@@ -2,7 +2,7 @@
 title: "Common pitfalls with Repo.transaction in Elixir"
 date: 2024-11-24T20:09:31-03:00
 categories: [programming]
-tags: [Elixir]
+tags: [Elixir, Ecto]
 image: cover.webp
 ---
 
